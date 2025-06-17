@@ -12,37 +12,64 @@ function useAuth() {
   const [username, setUsername] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
+  const handleSession = async (session: AuthSession | null) => {
+    setSession(session)
+    if (session) {
+      try {
+        // First check if profile exists
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', session.user.id)
+          .single()
+
+        if (profileError && profileError.code === 'PGRST116') {
+          // Profile doesn't exist - create it
+          const storedUsername = localStorage.getItem('pendingUsername')
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert({
+              id: session.user.id,
+              email: session.user.email,
+              username: storedUsername || session.user.email?.split('@')[0] // Fallback to email if no stored username
+            })
+          
+          if (insertError) {
+            console.error('Error creating profile:', insertError)
+          } else {
+            // After creating profile, fetch it again
+            const { data: newProfile } = await supabase
+              .from('profiles')
+              .select('username')
+              .eq('id', session.user.id)
+              .single()
+            setUsername(newProfile?.username || null)
+            // Clear the stored username after successful profile creation
+            localStorage.removeItem('pendingUsername')
+          }
+        } else if (profile) {
+          setUsername(profile.username)
+        }
+      } catch (err) {
+        console.error('Error in handleSession:', err)
+      }
+    } else {
+      setUsername(null)
+    }
+    setLoading(false)
+  }
+
   useEffect(() => {
     let mounted = true
+
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (mounted) setSession(session)
-      if (session) {
-        supabase
-          .from('profiles')
-          .select('username')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data }) => {
-            if (mounted) setUsername(data?.username || null)
-          })
-      } else {
-        setUsername(null)
-      }
-      setLoading(false)
+      if (mounted) handleSession(session)
     })
+
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      if (session) {
-        supabase
-          .from('profiles')
-          .select('username')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data }) => setUsername(data?.username || null))
-      } else {
-        setUsername(null)
-      }
+      handleSession(session)
     })
+
     return () => {
       mounted = false
       listener.subscription.unsubscribe()

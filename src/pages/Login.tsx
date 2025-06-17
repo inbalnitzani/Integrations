@@ -28,6 +28,12 @@ const Login: React.FC = () => {
         setLoading(false)
         return
       }
+
+      // Store the chosen username for later use after email confirmation
+      if (data.user) {
+        localStorage.setItem('pendingUsername', username)
+      }
+
       setLoading(false)
       setIsSignup(false)
       setUsername('')
