@@ -1,5 +1,6 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { supabase } from '../supabaseClient'
 
 interface HeaderProps {
   username?: string | null
@@ -12,7 +13,6 @@ const Header: React.FC<HeaderProps> = ({ username, onLogout, isLoggedIn }) => (
     <span className="font-bold text-lg">Integrations App</span>
     <nav className="space-x-4 flex items-center">
       <Link to="/" className="hover:underline">Home</Link>
-      <Link to="/create" className="hover:underline">Create</Link>
       {!isLoggedIn && <Link to="/login" className="hover:underline">Login</Link>}
       {isLoggedIn && (
         <>

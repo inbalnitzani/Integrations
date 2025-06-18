@@ -1,10 +1,257 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { supabase } from '../supabaseClient'
+import type { Integration } from '../types/integration'
 
-const CreateIntegration: React.FC = () => {
+interface CreateIntegrationProps {
+  onClose: () => void
+  onSuccess: () => void
+  integration?: Integration
+}
+
+const CreateIntegration: React.FC<CreateIntegrationProps> = ({
+  onClose,
+  onSuccess,
+  integration,
+}) => {
+  const isEditMode = !!integration
+  const [formData, setFormData] = useState<Partial<Integration>>(
+    integration || {
+      name: '',
+      type: undefined,
+      supplier: '',
+      description: '',
+      api_docs_url: '',
+      config_example: '',
+      tags: '',
+    }
+  )
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      if (isEditMode) {
+        const { error: updateError } = await supabase
+          .from('integrations')
+          .update(formData)
+          .eq('id', integration.id)
+
+        if (updateError) throw updateError
+      } else {
+        const { error: insertError } = await supabase
+          .from('integrations')
+          .insert([formData])
+
+        if (insertError) throw insertError
+      }
+
+      onSuccess()
+      onClose()
+    } catch (err) {
+      setError(isEditMode ? 'Failed to update integration' : 'Failed to create integration')
+      console.error('Error:', err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!isEditMode) return
+
+    if (!window.confirm('Are you sure you want to delete this integration?')) {
+      return
+    }
+
+    setIsDeleting(true)
+    setError(null)
+
+    try {
+      const { error: deleteError } = await supabase
+        .from('integrations')
+        .delete()
+        .eq('id', integration.id)
+
+      if (deleteError) throw deleteError
+
+      onSuccess()
+      onClose()
+    } catch (err) {
+      setError('Failed to delete integration')
+      console.error('Error deleting integration:', err)
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
+  }
+
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Create Integration</h1>
-      {/* TODO: Add form and OpenAI completion logic */}
+    <div className="max-w-lg mx-auto">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {error && (
+          <div className="p-3 bg-red-50 text-red-500 rounded-md text-sm">
+            {error}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+              Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name || ''}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm
+              focus:border-blue-500 focus:ring-blue-500 text-base py-2.5 px-3 leading-normal"             required
+            />
+          </div>
+
+          <div>
+            <label htmlFor="type" className="block text-sm font-medium text-gray-700">
+              Type
+            </label>
+            <select
+              id="type"
+              name="type"
+              value={formData.type || ''}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm
+              focus:border-blue-500 focus:ring-blue-500 text-base py-2.5 px-3 leading-normal"              required
+            >
+              <option value="">Select a type</option>
+              <option value="Invoicing & Billing">Invoicing & Billing</option>
+              <option value="SMS & Messaging">SMS & Messaging</option>
+              <option value="Chat & Instant Messaging">Chat & Instant Messaging</option>
+              <option value="Major CRMs">Major CRMs</option>
+              <option value="Email Services">Email Services</option>
+              <option value="Payment Processors">Payment Processors</option>
+            </select>
+
+          </div>
+
+          <div>
+            <label htmlFor="supplier" className="block text-sm font-medium text-gray-700">
+              Supplier
+            </label>
+            <input
+              type="text"
+              id="supplier"
+              name="supplier"
+              value={formData.supplier || ''}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm
+              focus:border-blue-500 focus:ring-blue-500 text-base py-2.5 px-3 leading-normal"              required
+            />
+          </div>
+
+
+
+          <div>
+            <label htmlFor="tags" className="block text-sm font-medium text-gray-700">
+              Tags (comma separated)
+            </label>
+            <input
+              type="text"
+              id="tags"
+              name="tags"
+              value={formData.tags || ''}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm
+              focus:border-blue-500 focus:ring-blue-500 text-base py-2.5 px-3 leading-normal"              placeholder="tag1, tag2, tag3"
+            />
+          </div>
+        </div>
+
+        <div>
+            <label htmlFor="api_docs_url" className="block text-sm font-medium text-gray-700">
+              API Documentation URL
+            </label>
+            <input
+              type="url"
+              id="api_docs_url"
+              name="api_docs_url"
+              value={formData.api_docs_url || ''}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm
+              focus:border-blue-500 focus:ring-blue-500 text-base py-2.5 px-3 leading-normal"            />
+          </div>
+
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div>
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+              Description
+            </label>
+            <textarea
+              id="description"
+              name="description"
+              value={formData.description || ''}
+              onChange={handleChange}
+              rows={3}
+              className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm
+              focus:border-blue-500 focus:ring-blue-500 text-base py-2.5 px-3 leading-normal"              required
+            />
+          </div>
+
+          <div>
+            <label htmlFor="configuration_example" className="block text-sm font-medium text-gray-700">
+              Configuration Example
+            </label>
+            <textarea
+              id="config_example"
+              name="config_example"
+              value={formData.config_example || ''}
+              onChange={handleChange}
+              rows={3}
+              className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm
+              focus:border-blue-500 focus:ring-blue-500 text-base py-2.5 px-3 leading-normal"            />
+          </div>
+        </div>
+
+
+        <div className="flex justify-between items-center pt-4">
+          {isEditMode && (
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-500 border border-transparent rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete Integration'}
+            </button>
+          )}
+
+          <div className={`flex gap-3 ${!isEditMode ? 'ml-auto' : ''}`}>
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-500 border border-transparent rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (isEditMode ? 'Saving...' : 'Creating...') : (isEditMode ? 'Save Changes' : 'Create Integration')}
+            </button>
+          </div>
+        </div>
+      </form>
     </div>
   )
 }

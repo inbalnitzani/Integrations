@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../supabaseClient'
 import type { Integration, IntegrationFilters as IntegrationFiltersType } from '../types/integration'
 import IntegrationFiltersComponent from '../components/IntegrationFilters'
+import Modal from '../components/Modal'
+import CreateIntegration from './CreateIntegration'
 
 const ITEMS_PER_PAGE = 9
 
@@ -13,6 +15,8 @@ const IntegrationsList: React.FC = () => {
   const [currentFilters, setCurrentFilters] = useState<IntegrationFiltersType>({})
   const [currentPage, setCurrentPage] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null)
 
   // Fetch suppliers only once when component mounts
   const fetchSuppliers = useCallback(async () => {
@@ -104,6 +108,23 @@ const IntegrationsList: React.FC = () => {
     fetchIntegrations(currentFilters, page)
   }
 
+  const handleCreateSuccess = () => {
+    fetchIntegrations(currentFilters, currentPage)
+    fetchSuppliers() // Refresh suppliers list
+    setIsModalOpen(false)
+    setSelectedIntegration(null)
+  }
+
+  const handleIntegrationClick = (integration: Integration) => {
+    setSelectedIntegration(integration)
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setSelectedIntegration(null)
+  }
+
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE)
 
   if (error) {
@@ -114,6 +135,12 @@ const IntegrationsList: React.FC = () => {
     <div className="p-4 sm:p-8">
       <div className="flex justify-between items-center mb-4 sm:mb-6">
         <h1 className="text-xl sm:text-2xl font-bold">Integrations</h1>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+        >
+          Create Integration
+        </button>
       </div>
 
       <IntegrationFiltersComponent
@@ -139,7 +166,8 @@ const IntegrationsList: React.FC = () => {
               {integrations.map(integration => (
                 <div
                   key={integration.id}
-                  className="bg-white rounded-lg shadow p-4 sm:p-6 hover:shadow-md transition-shadow"
+                  onClick={() => handleIntegrationClick(integration)}
+                  className="bg-white rounded-lg shadow p-4 sm:p-6 hover:shadow-md transition-shadow cursor-pointer"
                 >
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-4 mb-3 sm:mb-4">
                     <h3 className="text-base sm:text-lg font-semibold">{integration.name}</h3>
@@ -200,6 +228,18 @@ const IntegrationsList: React.FC = () => {
           </>
         )}
       </div>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        title={selectedIntegration ? 'Edit Integration' : 'Create New Integration'}
+      >
+        <CreateIntegration
+          onClose={handleCloseModal}
+          onSuccess={handleCreateSuccess}
+          integration={selectedIntegration || undefined}
+        />
+      </Modal>
     </div>
   )
 }
