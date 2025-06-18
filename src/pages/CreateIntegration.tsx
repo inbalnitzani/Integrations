@@ -28,6 +28,7 @@ const CreateIntegration: React.FC<CreateIntegrationProps> = ({
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isAIGenerating, setIsAIGenerating] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -95,6 +96,35 @@ const CreateIntegration: React.FC<CreateIntegrationProps> = ({
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
+  const handleAIFields = async () => {
+    setIsAIGenerating(true)
+    setError(null)
+
+    try {
+      const response = await fetch('https://wsgtrssaixhihlicfcpn.functions.supabase.co/generate-integration-fields', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: formData.name }),
+      })
+      
+      const data = await response.json()
+      console.log(data)
+      setFormData(prev => ({
+        ...prev,
+        description: data.result.description || prev.description,
+        api_docs_url: data.result.api_docs_url || prev.api_docs_url,
+        config_example: data.result.sample_config || prev.config_example,
+      }))
+    } catch (err) {
+      setError('Failed to generate AI fields')
+      console.error('Error:', err)
+    } finally {
+      setIsAIGenerating(false)
+    }
+  }
+
   return (
     <div className="max-w-lg mx-auto">
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -158,8 +188,6 @@ const CreateIntegration: React.FC<CreateIntegrationProps> = ({
             />
           </div>
 
-
-
           <div>
             <label htmlFor="tags" className="block text-sm font-medium text-gray-700">
               Tags (comma separated)
@@ -174,6 +202,18 @@ const CreateIntegration: React.FC<CreateIntegrationProps> = ({
               focus:border-blue-500 focus:ring-blue-500 text-base py-2.5 px-3 leading-normal"              placeholder="tag1, tag2, tag3"
             />
           </div>
+        </div>
+
+        <div className="flex justify-between items-center pt-4">
+          <button
+            type="button"
+            onClick={handleAIFields}
+            disabled={isAIGenerating || !formData.name}
+            className="px-4 py-2 rounded bg-green-600 text-white font-semibold hover:bg-green-700 flex items-center gap-2"
+          >
+            {isAIGenerating && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>}
+            Generate with AI
+          </button>
         </div>
 
         <div>
