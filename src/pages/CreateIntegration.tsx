@@ -31,7 +31,7 @@ const CreateIntegration: React.FC<CreateIntegrationProps> = ({
   const [error, setError] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isAIGenerating, setIsAIGenerating] = useState(false);
-  const { session, loading } = useAuth();
+  const { session } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

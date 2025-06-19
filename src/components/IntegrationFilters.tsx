@@ -12,8 +12,9 @@ const IntegrationFiltersComponent: React.FC<IntegrationFiltersProps> = ({
   onFilterChange,
   suppliers,
 }) => {
+
   const handleIntegrationTypeChange = (integration_type: IntegrationType | '') => {
-    onFilterChange({ ...filters, integration_type })
+    onFilterChange({ ...filters, integration_type: integration_type || undefined })
   }
 
   const handleSupplierChange = (supplier: string) => {

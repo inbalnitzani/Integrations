@@ -95,7 +95,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 }
 
 const App: React.FC = () => {
-  const { session, username, loading, logout } = useAuth()
+  const { session, username, logout } = useAuth()
 
   return (
     <Router>
@@ -117,7 +117,7 @@ const App: React.FC = () => {
           path="/create"
           element={
             <ProtectedRoute>
-              <CreateIntegration />
+              <CreateIntegration onClose={() => {}} onSuccess={() => {}} />
             </ProtectedRoute>
           }
         />
