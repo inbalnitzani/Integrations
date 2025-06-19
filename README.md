@@ -1,7 +1,7 @@
 1. Clone the repo and install dependencies:
    ```sh
    git clone https://github.com/inbalnitzani/Integrations.git
-   cd integrations-app
+   cd integrations
    npm install
    ```
 
