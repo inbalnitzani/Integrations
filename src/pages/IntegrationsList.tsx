@@ -6,7 +6,7 @@ import Modal from '../components/Modal'
 import CreateIntegration from './CreateIntegration'
 import IntegrationCard from '../components/IntegrationCard'
 
-const ITEMS_PER_PAGE = 9
+const ITEMS_PER_PAGE = 6
 
 const IntegrationsList: React.FC = () => {
   const [integrations, setIntegrations] = useState<Integration[]>([])
@@ -19,7 +19,7 @@ const IntegrationsList: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null)
 
-  // Fetch suppliers only once when component mounts
+  // Fetch suppliers for filters
   const fetchSuppliers = useCallback(async () => {
     try {
       const { data: allIntegrations } = await supabase
@@ -35,7 +35,7 @@ const IntegrationsList: React.FC = () => {
       console.error('Error fetching suppliers:', err)
     }
   }, [])
-
+  
   useEffect(() => {
     fetchSuppliers()
   }, [fetchSuppliers])
@@ -68,8 +68,8 @@ const IntegrationsList: React.FC = () => {
       // Apply date range filter
       if (filters.dateRange?.start && filters.dateRange?.end) {
         query = query
-          .gte('created_at', filters.dateRange.start)
-          .lte('created_at', filters.dateRange.end)
+          .gte('created_at', filters.dateRange.start) //greater than or equal to
+          .lte('created_at', filters.dateRange.end) //less than or equal to
       }
 
       // Apply search filter
@@ -101,7 +101,7 @@ const IntegrationsList: React.FC = () => {
   const handleFilterChange = (filters: IntegrationFiltersType) => {
     setCurrentFilters(filters)
     setCurrentPage(1) // Reset to first page when filters change
-    fetchIntegrations(filters, 1)
+    fetchIntegrations(filters, 1) // Fetch integrations with new filters and reset to first page
   }
 
   const handlePageChange = (page: number) => {
@@ -112,7 +112,7 @@ const IntegrationsList: React.FC = () => {
   const handleCreateSuccess = () => {
     fetchIntegrations(currentFilters, currentPage)
     fetchSuppliers() // Refresh suppliers list
-    setIsModalOpen(false)
+    setIsModalOpen(false) // Close Create Integration Modal
     setSelectedIntegration(null)
   }
 
@@ -135,7 +135,10 @@ const IntegrationsList: React.FC = () => {
   return (
     <div className="p-4 sm:p-8">
       <div className="flex justify-between items-center mb-4 sm:mb-6">
+
         <h1 className="text-xl sm:text-2xl font-bold">Integrations</h1>
+
+        {/* Create Integration Button */}
         <button
           onClick={() => setIsModalOpen(true)}
           className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
@@ -144,12 +147,14 @@ const IntegrationsList: React.FC = () => {
         </button>
       </div>
 
+      {/* Filters */}
       <IntegrationFiltersComponent
         filters={currentFilters}
         onFilterChange={handleFilterChange}
         suppliers={suppliers}
       />
 
+      {/* Integrations List */}
       <div className="relative min-h-[200px]">
         {isLoading && (
           <div className="absolute inset-0 bg-white/50 flex items-center justify-center">

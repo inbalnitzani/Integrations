@@ -36,9 +36,13 @@ const Login: React.FC = () => {
 
       setLoading(false)
       setIsSignup(false)
+
+      // Clear input fields
       setUsername('')
       setPassword('')
       setEmail('')
+
+      // Set info message
       setInfo(
         data.user && !data.session
           ? 'Signup successful! Please check your email to confirm your account before logging in.'
@@ -53,6 +57,7 @@ const Login: React.FC = () => {
         .eq('username', username)
         .single()
 
+      
       if (profileLookupError || !userProfile) {
         setError('Username not found')
         setLoading(false)
@@ -73,6 +78,7 @@ const Login: React.FC = () => {
         .select('id')
         .eq('id', signInData.user?.id)
         .single()
+      // If profile doesn't exist, create it
       if (!existingProfile && signInData.user) {
         const { error: insertError } = await supabase.from('profiles').insert({
           id: signInData.user.id,
@@ -97,32 +103,23 @@ const Login: React.FC = () => {
           {isSignup ? 'Sign Up' : 'Login'}
         </h2>
         <form className="space-y-4" onSubmit={handleSubmit}>
-          {isSignup ? (
-            <>
-              <input
-                className="w-full px-3 py-2 border rounded"
-                placeholder="Email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-              />
-              <input
-                className="w-full px-3 py-2 border rounded"
-                placeholder="Username"
-                value={username}
-                onChange={e => setUsername(e.target.value)}
-                required
-              />
-            </>
-          ) : (
+          
+          {isSignup && (
             <input
               className="w-full px-3 py-2 border rounded"
-              placeholder="Username"
-              value={username}
-              onChange={e => setUsername(e.target.value)}
+              placeholder="Email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
               required
             />
           )}
+          <input
+            className="w-full px-3 py-2 border rounded"
+            placeholder="Username"
+            value={username}
+            onChange={e => setUsername(e.target.value)}
+            required
+          />
           <input
             className="w-full px-3 py-2 border rounded"
             placeholder="Password"

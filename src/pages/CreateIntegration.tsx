@@ -39,6 +39,7 @@ const CreateIntegration: React.FC<CreateIntegrationProps> = ({
     try {
       const user = await supabase.auth.getUser()
       const email = user.data.user?.email
+
       if (isEditMode) {
         const { error: updateError } = await supabase
           .from('integrations')
@@ -141,6 +142,7 @@ const CreateIntegration: React.FC<CreateIntegrationProps> = ({
           </div>
         )}
 
+        {/* name, generate with AI, type, supplier, tags, logo_url */}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -157,16 +159,20 @@ const CreateIntegration: React.FC<CreateIntegrationProps> = ({
             />
           </div>
           <div className="flex justify-between items-center pt-4">
-          <button
-            type="button"
-            onClick={handleAIFields}
-            disabled={isAIGenerating || !formData.name}
-            className="px-4 py-2 rounded bg-green-600 text-white font-semibold hover:bg-green-700 flex items-center gap-2"
-          >
-            {isAIGenerating && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>}
-            Generate with AI
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={handleAIFields}
+              disabled={isAIGenerating || !formData.name}
+              className={`px-4 py-2 rounded font-semibold flex items-center gap-2
+              ${!formData.name
+                  ? 'bg-green-400 text-white opacity-50 cursor-not-allowed'
+                  : 'bg-green-600 text-white hover:bg-green-700'}
+            `}          >
+              {isAIGenerating && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>}
+              Generate with AI
+            </button>
+          </div>
+
           <div>
             <label htmlFor="integration_type" className="block text-sm font-medium text-gray-700">
               Type
@@ -220,24 +226,22 @@ const CreateIntegration: React.FC<CreateIntegrationProps> = ({
             />
           </div>
 
-          
-        <div>
-          <label htmlFor="logo_url" className="block text-sm font-medium text-gray-700">
-            Logo URL
-          </label>
-          <input
-            type="url"
-            id="logo_url"
-            name="logo_url"
-            value={formData.logo_url || ''}
-            onChange={handleChange}
-            className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm
+          <div>
+            <label htmlFor="logo_url" className="block text-sm font-medium text-gray-700">
+              Logo URL
+            </label>
+            <input
+              type="url"
+              id="logo_url"
+              name="logo_url"
+              value={formData.logo_url || ''}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm
               focus:border-blue-500 focus:ring-blue-500 text-base py-2.5 px-3 leading-normal"            />
+          </div>
         </div>
-        </div>
 
-
-
+        {/* api docs url */}
         <div>
           <label htmlFor="api_docs_url" className="block text-sm font-medium text-gray-700">
             API Documentation URL
@@ -252,6 +256,7 @@ const CreateIntegration: React.FC<CreateIntegrationProps> = ({
               focus:border-blue-500 focus:ring-blue-500 text-base py-2.5 px-3 leading-normal"            />
         </div>
 
+        {/* description and configuration example */}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
             <label htmlFor="description" className="block text-sm font-medium text-gray-700">
@@ -283,7 +288,7 @@ const CreateIntegration: React.FC<CreateIntegrationProps> = ({
           </div>
         </div>
 
-
+        {/* buttons */}
         <div className="flex justify-between items-center pt-4">
           {isEditMode && (
             <button
