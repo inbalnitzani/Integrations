@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { supabase } from '../supabaseClient'
 import type { Integration } from '../types/integration'
+import { useAuth } from '../App'
 
 interface CreateIntegrationProps {
   onClose: () => void
@@ -30,6 +31,7 @@ const CreateIntegration: React.FC<CreateIntegrationProps> = ({
   const [error, setError] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isAIGenerating, setIsAIGenerating] = useState(false);
+  const { session, loading } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -105,10 +107,12 @@ const CreateIntegration: React.FC<CreateIntegrationProps> = ({
     setError(null)
 
     try {
+      
       const response = await fetch('https://wsgtrssaixhihlicfcpn.functions.supabase.co/generate-integration-fields', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`,
         },
         body: JSON.stringify({ name: formData.name }),
       })

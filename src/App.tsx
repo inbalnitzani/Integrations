@@ -7,7 +7,7 @@ import CreateIntegration from './pages/CreateIntegration'
 import { supabase } from './supabaseClient'
 import type { AuthSession } from '@supabase/supabase-js'
 
-function useAuth() {
+export function useAuth() {
   const [session, setSession] = useState<AuthSession | null>(null)
   const [username, setUsername] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -63,6 +63,7 @@ function useAuth() {
     let mounted = true
 
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("session", session)
       if (mounted) handleSession(session)
     })
 
