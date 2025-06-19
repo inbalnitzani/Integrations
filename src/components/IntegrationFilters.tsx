@@ -12,9 +12,8 @@ const IntegrationFiltersComponent: React.FC<IntegrationFiltersProps> = ({
   onFilterChange,
   suppliers,
 }) => {
-
   const handleIntegrationTypeChange = (integration_type: IntegrationType | '') => {
-    onFilterChange({ ...filters, integration_type: integration_type || undefined })
+    onFilterChange({ ...filters, integration_type })
   }
 
   const handleSupplierChange = (supplier: string) => {
@@ -26,10 +25,10 @@ const IntegrationFiltersComponent: React.FC<IntegrationFiltersProps> = ({
       ...filters.dateRange,
       [field]: value,
     }
-    if (newDateRange.start && newDateRange.end) {
+    if (newDateRange.start || newDateRange.end) {
       onFilterChange({
         ...filters,
-        dateRange: newDateRange as { start: string; end: string },
+        dateRange: newDateRange,
       })
     } else {
       onFilterChange({
@@ -112,13 +111,13 @@ const IntegrationFiltersComponent: React.FC<IntegrationFiltersProps> = ({
           <div className="grid grid-cols-2 gap-2">
             <input
               type="date"
-              className="px-3 py-2 border rounded-md"
+              className={`px-3 py-2 border rounded-md ${!filters.dateRange?.start && filters.dateRange?.end ? 'border-red-500' : ''}`}
               value={filters.dateRange?.start || ''}
               onChange={e => handleDateRangeChange('start', e.target.value)}
             />
             <input
               type="date"
-              className="px-3 py-2 border rounded-md"
+              className={`px-3 py-2 border rounded-md ${!filters.dateRange?.end && filters.dateRange?.start ? 'border-red-500' : ''}`}
               value={filters.dateRange?.end || ''}
               onChange={e => handleDateRangeChange('end', e.target.value)}
             />

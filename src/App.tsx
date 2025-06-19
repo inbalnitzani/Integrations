@@ -63,7 +63,6 @@ export function useAuth() {
     let mounted = true
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("session", session)
       if (mounted) handleSession(session)
     })
 
