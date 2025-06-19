@@ -8,7 +8,7 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
 };
 
-// Helper to check if a URL is valid (returns 200)
+// check if a URL is valid (returns 200)
 async function isValidImageUrl(url: string): Promise<boolean> {
   try {
     const res = await fetch(url, { method: "HEAD" });
@@ -25,15 +25,15 @@ Deno.serve(async (req) => {
   }
 
   try {
-    console.log("🔹 Request received");
+    console.log("Request received");
 
     let name;
     try {
       const body = await req.json();
-      console.log("🔸 Request body:", body);
+      console.log("Request body:", body);
       name = body.name;
     } catch (e) {
-      console.log("❌ Failed to parse JSON", e);
+      console.log("Failed to parse JSON", e);
       return new Response(JSON.stringify({ error: "Invalid JSON" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
     }
 
     if (!name) {
-      console.log("❗ No name provided");
+      console.log("No name provided");
       return new Response(JSON.stringify({ error: "Missing name" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
     }
 
     if (!OPENAI_API_KEY) {
-      console.log("❗ Missing OPENAI_API_KEY");
+      console.log("Missing OPENAI_API_KEY");
       return new Response(JSON.stringify({ error: "No API key" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -78,8 +78,9 @@ Deno.serve(async (req) => {
     
 
 
-    console.log("📤 Sending prompt to OpenAI:", prompt);
+    console.log("Sending prompt to OpenAI:", prompt);
 
+    // send prompt to OpenAI
     const completion = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -93,16 +94,19 @@ Deno.serve(async (req) => {
       }),
     });
 
+    // get response from OpenAI
     const data = await completion.json();
-    console.log("📥 Response from OpenAI:", data);
+    console.log("Response from OpenAI:", data);
 
     const message = data.choices?.[0]?.message?.content || "";
-    console.log("🧾 Message content:", message);
+    console.log("Message content:", message);
 
+    // parse message to JSON
     let result;
     try {
       result = JSON.parse(message);
     } catch {
+      // if message is not valid JSON, try to parse it
       const match = message.match(/\{[\s\S]*\}/);
 
       if (match) {
@@ -112,14 +116,13 @@ Deno.serve(async (req) => {
             .replace(/\\n/g, '')
             .replace(/\s+/g, ' ')
 
-          console.log("🧹 Cleaned matched string:", cleaned);
           result = JSON.parse(cleaned);
         } catch (e) {
-          console.log("⚠️ Failed to parse cleaned JSON:", match[0]);
+          console.log("Failed to parse cleaned JSON:", match[0]);
           result = { description: "", api_docs_url: "", sample_config: "" };
         }
       } else {
-        console.log("❌ No JSON object found at all in message:", message);
+        console.log("No JSON object found at all in message:", message);
         result = { description: "", api_docs_url: "", sample_config: "" };
       }
     }
