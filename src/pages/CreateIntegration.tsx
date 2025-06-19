@@ -23,6 +23,7 @@ const CreateIntegration: React.FC<CreateIntegrationProps> = ({
       api_docs_url: '',
       config_example: '',
       tags: '',
+      logo_url: '',
     }
   )
   const [isLoading, setIsLoading] = useState(false)
@@ -118,6 +119,10 @@ const CreateIntegration: React.FC<CreateIntegrationProps> = ({
         description: data.result.description || prev.description,
         api_docs_url: data.result.api_docs_url || prev.api_docs_url,
         config_example: data.result.sample_config || prev.config_example,
+        logo_url: data.result.logo_url || prev.logo_url,
+        tags: data.result.tags || prev.tags,
+        supplier: data.result.supplier || prev.supplier,
+        integration_type: data.result.integration_type || prev.integration_type,
       }))
     } catch (err) {
       setError('Failed to generate AI fields')
@@ -214,6 +219,21 @@ const CreateIntegration: React.FC<CreateIntegrationProps> = ({
               focus:border-blue-500 focus:ring-blue-500 text-base py-2.5 px-3 leading-normal"              placeholder="tag1, tag2, tag3"
             />
           </div>
+
+          
+        <div>
+          <label htmlFor="logo_url" className="block text-sm font-medium text-gray-700">
+            Logo URL
+          </label>
+          <input
+            type="url"
+            id="logo_url"
+            name="logo_url"
+            value={formData.logo_url || ''}
+            onChange={handleChange}
+            className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm
+              focus:border-blue-500 focus:ring-blue-500 text-base py-2.5 px-3 leading-normal"            />
+        </div>
         </div>
 
 
