@@ -4,6 +4,7 @@ import type { Integration, IntegrationFilters as IntegrationFiltersType } from '
 import IntegrationFiltersComponent from '../components/IntegrationFilters'
 import Modal from '../components/Modal'
 import CreateIntegration from './CreateIntegration'
+import IntegrationCard from '../components/IntegrationCard'
 
 const ITEMS_PER_PAGE = 9
 
@@ -155,7 +156,7 @@ const IntegrationsList: React.FC = () => {
             <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
         )}
-        
+
         {!isLoading && integrations.length === 0 ? (
           <div className="text-center py-6 sm:py-8 text-gray-500">
             No integrations found
@@ -164,27 +165,20 @@ const IntegrationsList: React.FC = () => {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {integrations.map(integration => (
-                <div
+                <IntegrationCard
                   key={integration.id}
+                  name={integration.name}
+                  description={integration.description}
+                  config={integration.config_example}
+                  logo_url={integration.logo_url}
+                  integration_type={integration.integration_type}
+                  supplier={integration.supplier}
+                  tags={integration.tags}
+                  api_docs_url={integration.api_docs_url}
+                  created_at={integration.created_at}
+                  author={integration.author}
                   onClick={() => handleIntegrationClick(integration)}
-                  className="bg-white rounded-lg shadow p-4 sm:p-6 hover:shadow-md transition-shadow cursor-pointer"
-                >
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-4 mb-3 sm:mb-4">
-                    <h3 className="text-base sm:text-lg font-semibold">{integration.name}</h3>
-                    <span className="px-2 py-1 text-xs sm:text-sm bg-blue-100 text-blue-800 rounded self-start">
-                      {integration.integration_type}
-                    </span>
-                  </div>
-                  <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4 line-clamp-2">
-                    {integration.description}
-                  </p>
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-xs sm:text-sm text-gray-500 gap-1 sm:gap-0">
-                    <span>{integration.supplier}</span>
-                    <span>
-                      {new Date(integration.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
+                />
               ))}
             </div>
 
@@ -198,18 +192,17 @@ const IntegrationsList: React.FC = () => {
                 >
                   Previous
                 </button>
-                
+
                 <div className="flex flex-wrap justify-center gap-1 sm:gap-2">
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                     <button
                       key={page}
                       onClick={() => handlePageChange(page)}
                       disabled={isLoading}
-                      className={`px-2 sm:px-3 py-1 text-sm rounded border ${
-                        currentPage === page
+                      className={`px-2 sm:px-3 py-1 text-sm rounded border ${currentPage === page
                           ? 'bg-blue-500 text-white'
                           : 'hover:bg-gray-100'
-                      } disabled:opacity-50 disabled:cursor-not-allowed`}
+                        } disabled:opacity-50 disabled:cursor-not-allowed`}
                     >
                       {page}
                     </button>

@@ -10,7 +10,8 @@ export interface Integration {
   config_example?: string
   created_at: string
   updated_at: string
-  author: string;
+  author: string
+  logo_url?: string
 }
 
 export interface IntegrationFilters {
