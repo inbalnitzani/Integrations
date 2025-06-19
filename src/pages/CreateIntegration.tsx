@@ -17,7 +17,7 @@ const CreateIntegration: React.FC<CreateIntegrationProps> = ({
   const [formData, setFormData] = useState<Partial<Integration>>(
     integration || {
       name: '',
-      type: undefined,
+      integration_type: undefined,
       supplier: '',
       description: '',
       api_docs_url: '',
@@ -36,6 +36,8 @@ const CreateIntegration: React.FC<CreateIntegrationProps> = ({
     setError(null)
 
     try {
+      const user = await supabase.auth.getUser()
+      const email = user.data.user?.email
       if (isEditMode) {
         const { error: updateError } = await supabase
           .from('integrations')
@@ -46,7 +48,7 @@ const CreateIntegration: React.FC<CreateIntegrationProps> = ({
       } else {
         const { error: insertError } = await supabase
           .from('integrations')
-          .insert([formData])
+          .insert([{ ...formData, author: email }])
 
         if (insertError) throw insertError
       }
@@ -108,7 +110,7 @@ const CreateIntegration: React.FC<CreateIntegrationProps> = ({
         },
         body: JSON.stringify({ name: formData.name }),
       })
-      
+
       const data = await response.json()
       console.log(data)
       setFormData(prev => ({
@@ -149,15 +151,25 @@ const CreateIntegration: React.FC<CreateIntegrationProps> = ({
               focus:border-blue-500 focus:ring-blue-500 text-base py-2.5 px-3 leading-normal"             required
             />
           </div>
-
+          <div className="flex justify-between items-center pt-4">
+          <button
+            type="button"
+            onClick={handleAIFields}
+            disabled={isAIGenerating || !formData.name}
+            className="px-4 py-2 rounded bg-green-600 text-white font-semibold hover:bg-green-700 flex items-center gap-2"
+          >
+            {isAIGenerating && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>}
+            Generate with AI
+          </button>
+        </div>
           <div>
-            <label htmlFor="type" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="integration_type" className="block text-sm font-medium text-gray-700">
               Type
             </label>
             <select
-              id="type"
-              name="type"
-              value={formData.type || ''}
+              id="integration_type"
+              name="integration_type"
+              value={formData.integration_type || ''}
               onChange={handleChange}
               className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm
               focus:border-blue-500 focus:ring-blue-500 text-base py-2.5 px-3 leading-normal"              required
@@ -204,31 +216,21 @@ const CreateIntegration: React.FC<CreateIntegrationProps> = ({
           </div>
         </div>
 
-        <div className="flex justify-between items-center pt-4">
-          <button
-            type="button"
-            onClick={handleAIFields}
-            disabled={isAIGenerating || !formData.name}
-            className="px-4 py-2 rounded bg-green-600 text-white font-semibold hover:bg-green-700 flex items-center gap-2"
-          >
-            {isAIGenerating && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>}
-            Generate with AI
-          </button>
-        </div>
+
 
         <div>
-            <label htmlFor="api_docs_url" className="block text-sm font-medium text-gray-700">
-              API Documentation URL
-            </label>
-            <input
-              type="url"
-              id="api_docs_url"
-              name="api_docs_url"
-              value={formData.api_docs_url || ''}
-              onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm
+          <label htmlFor="api_docs_url" className="block text-sm font-medium text-gray-700">
+            API Documentation URL
+          </label>
+          <input
+            type="url"
+            id="api_docs_url"
+            name="api_docs_url"
+            value={formData.api_docs_url || ''}
+            onChange={handleChange}
+            className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm
               focus:border-blue-500 focus:ring-blue-500 text-base py-2.5 px-3 leading-normal"            />
-          </div>
+        </div>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>

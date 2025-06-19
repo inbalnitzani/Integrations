@@ -12,8 +12,8 @@ const IntegrationFiltersComponent: React.FC<IntegrationFiltersProps> = ({
   onFilterChange,
   suppliers,
 }) => {
-  const handleTypeChange = (type: IntegrationType | '') => {
-    onFilterChange({ ...filters, type: type || undefined })
+  const handleIntegrationTypeChange = (integration_type: IntegrationType | '') => {
+    onFilterChange({ ...filters, integration_type })
   }
 
   const handleSupplierChange = (supplier: string) => {
@@ -70,8 +70,8 @@ const IntegrationFiltersComponent: React.FC<IntegrationFiltersProps> = ({
           </label>
           <select
             className="w-full px-3 py-2 border rounded-md"
-            value={filters.type || ''}
-            onChange={e => handleTypeChange(e.target.value as IntegrationType | '')}
+            value={filters.integration_type || ''}
+            onChange={e => handleIntegrationTypeChange(e.target.value as IntegrationType)}
           >
             <option value="">All Types</option>
             <option value="Invoicing & Billing">Invoicing & Billing</option>

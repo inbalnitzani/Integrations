@@ -55,8 +55,8 @@ const IntegrationsList: React.FC = () => {
         .select('*', { count: 'exact' })
 
       // Apply type filter
-      if (filters.type) {
-        query = query.eq('type', filters.type)
+      if (filters.integration_type) {
+        query = query.eq('integration_type', filters.integration_type)
       }
 
       // Apply supplier filter
@@ -172,7 +172,7 @@ const IntegrationsList: React.FC = () => {
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-4 mb-3 sm:mb-4">
                     <h3 className="text-base sm:text-lg font-semibold">{integration.name}</h3>
                     <span className="px-2 py-1 text-xs sm:text-sm bg-blue-100 text-blue-800 rounded self-start">
-                      {integration.type}
+                      {integration.integration_type}
                     </span>
                   </div>
                   <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4 line-clamp-2">
